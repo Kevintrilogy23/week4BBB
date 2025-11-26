@@ -1,4 +1,4 @@
-name: Android-Build-Kade
+name: Build-Android
 
 on:
   push:
@@ -13,19 +13,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
-      - name: Setup Java JDK
+      - name: Setup Java JDK 11
         uses: actions/setup-java@v4
         with:
-          java-version: 17
           distribution: temurin
+          java-version: 11
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
       - name: Setup Android NDK
-        uses: nttld/setup-ndk@v1
+        uses: nttld/setup-ndk@v2
         id: setup-ndk
         with:
           ndk-version: r21e
@@ -38,33 +38,40 @@ jobs:
       - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
-          haxelib install hxcpp > /dev/null
+          haxelib install hxcpp
           haxelib install lime 7.9.0
           haxelib install openfl 9.1.0
-          haxelib --never install flixel
+
+          # Flixel direto do GitHub (evita travar no Haxelib)
+          haxelib git flixel https://github.com/HaxeFlixel/flixel 5.6.1
+
           haxelib install flixel-ui
           haxelib install flixel-addons
+
           haxelib git polymod https://github.com/MasterEric/polymod
           haxelib git linc_luajit https://github.com/MAJigsaw77/linc_luajit
           haxelib git extension-webm https://github.com/Sirox228/extension-webm
           haxelib git extension-webview https://github.com/MatheusSilver/extension-webview
 
-      - name: Lime setup
+      - name: Configure Lime
         run: |
-          haxelib run lime setup -alias -y
+          haxelib run lime setup -y
           haxelib run lime config ANDROID_SDK $ANDROID_HOME
-          haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_HOME
+          haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
           haxelib run lime config JAVA_HOME $JAVA_HOME
-          haxelib run lime config ANDROID_SETUP true
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+          # Android 7 até Android 15
+          # API 24 = Android 7
+          # API 34 = Android 14/15
+          haxelib run lime config ANDROID_MIN_SDK 24
+          haxelib run lime config ANDROID_TARGET_SDK 34
 
       - name: Build APK
         run: |
-          haxelib run lime build android -release
+          haxelib run lime build android -release --app-version="4.0.${{ github.run_id }}"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v4
         with:
-          name: KadeEngine-Android-APK
-          path: export/android/bin/app-release.apk
+          name: APK-Android-Build
+          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
