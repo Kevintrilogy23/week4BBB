@@ -1,0 +1,46 @@
+name: Build week4BBB Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
+
+      - name: Install Haxelibs
+        run: |
+          haxelib setup ~/.haxelib
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install hscript --quiet
+          haxelib install hxCodec --quiet
+          haxelib install actuate --quiet
+          haxelib install polymod 1.7.0 --quiet
+
+      - name: Setup Android for Lime
+        run: |
+          yes | haxelib run lime setup android
+
+      - name: Build APK
+        run: |
+          haxelib run lime build android -release --app-version=1.0
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: week4BBB-Android
+          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
