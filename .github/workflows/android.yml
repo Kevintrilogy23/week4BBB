@@ -1,0 +1,44 @@
+name: Android-Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  buildAndroid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
+
+      - name: Install libraries
+        run: |
+          haxelib install hxcpp --quiet
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install hscript --quiet
+
+          # Mirror funcionando do newgrounds
+          haxelib git newgrounds https://github.com/KadeDev/newgrounds-hx
+
+          haxelib run lime setup -y
+          haxelib run lime setup android -y
+
+      - name: Build APK
+        run: |
+          haxelib run lime build android -release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-APK
+          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
