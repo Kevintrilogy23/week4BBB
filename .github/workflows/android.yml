@@ -27,9 +27,9 @@ jobs:
           haxelib install hscript --quiet
           haxelib install hxCodec --quiet
 
-          # Psych/Nightmare/Kade usam Polymod e linc_luajit
-          haxelib git polymod https://github.com/MasterEric/polymod
-          haxelib git linc_luajit https://github.com/MAJigsaw77/linc_luajit
+          # Mirrors estáveis para Psych / Kade / Nightmare
+          haxelib git polymod https://github.com/ShadowMario/polymod
+          haxelib git linc_luajit https://github.com/ShadowMario/linc_luajit
 
       - name: Setup Android
         run: |
