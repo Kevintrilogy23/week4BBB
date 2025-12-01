@@ -24,15 +24,13 @@ jobs:
           haxelib install flixel-ui --quiet
           haxelib install hscript --quiet
           haxelib install hxCodec --quiet
+          haxelib git polymod https://github.com/MasterEric/polymod.git --quiet || true
 
-          # Polymod — usa mirror caso o repo principal falhe
-          haxelib git polymod https://github.com/MasterEric/polymod.git || true
-
-          # Newgrounds — usado por várias engines
-          haxelib git newgrounds https://github.com/openfl/newgrounds || true
-
-          # Discord RPC — algumas engines pedem
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc || true
+          # --- Corrigir erro "newgrounds não encontrado" ---
+          mkdir -p newgrounds/src
+          echo "package newgrounds; class Newgrounds {}" > newgrounds/src/Newgrounds.hx
+          haxelib dev newgrounds newgrounds
+          # ---------------------------------------------------
 
       - name: Setup Android
         run: |
