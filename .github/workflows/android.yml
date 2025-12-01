@@ -1,36 +1,48 @@
-name: Android-Build
+name: Universal-Android-Build
 
 on:
   workflow_dispatch:
 
 jobs:
-  buildAndroid:
+  build-android:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.2.5
+          haxe-version: 4.3.2
 
-      - name: Install libraries
+      - name: Install global libs
         run: |
           haxelib install hxcpp --quiet
           haxelib install lime --quiet
           haxelib install openfl --quiet
 
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install flixel-ui --quiet
-          haxelib install hscript --quiet
+      - name: Install engine-specific libs (auto)
+        run: |
+          # Se tiver hmm.json (Psych / Nightmare), instala tudo
+          if [ -f "hmm.json" ]; then
+            haxelib install hmm --quiet
+            haxelib run hmm setup
+            haxelib run hmm install
+          fi
 
-          # Mirror funcionando do newgrounds
-          haxelib git newgrounds https://github.com/KadeDev/newgrounds-hx
+          # Se for Kade Engine, instala libs extras
+          if [ -d "source/kade" ] || [ -f "Project.xml" ]; then
+            haxelib install flixel --quiet
+            haxelib install flixel-addons --quiet
+            haxelib install flixel-ui --quiet
+            haxelib install hxCodec --quiet
+            haxelib install hxcpp-debug-server --quiet || true
+          fi
 
-          haxelib run lime setup -y
-          haxelib run lime setup android -y
+      - name: Setup Android
+        run: |
+          yes | haxelib run lime setup android
 
       - name: Build APK
         run: |
@@ -39,6 +51,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Build-APK
-          path: export/release/android/bin/app/build/outputs/apk/release/*.apk
-          if-no-files-found: error
+          name: Android-Build
+          path: export/release/android/bin/**/*.apk
