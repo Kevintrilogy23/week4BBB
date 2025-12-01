@@ -1,44 +1,35 @@
-name: Universal-Android-Build
+name: Android-Build
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  buildAndroid:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.3.2
+          haxe-version: 4.2.5
 
-      - name: Install global libs
+      - name: Install Haxelib Libs
         run: |
+          haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
+          haxelib install lime 8.1.2 --quiet
+          haxelib install openfl 9.3.2 --quiet
+          haxelib install flixel --quiet
+          haxelib install flixel-addons --quiet
+          haxelib install flixel-ui --quiet
+          haxelib install hscript --quiet
+          haxelib install hxCodec --quiet
 
-      - name: Install engine-specific libs (auto)
-        run: |
-          # Se tiver hmm.json (Psych / Nightmare), instala tudo
-          if [ -f "hmm.json" ]; then
-            haxelib install hmm --quiet
-            haxelib run hmm setup
-            haxelib run hmm install
-          fi
-
-          # Se for Kade Engine, instala libs extras
-          if [ -d "source/kade" ] || [ -f "Project.xml" ]; then
-            haxelib install flixel --quiet
-            haxelib install flixel-addons --quiet
-            haxelib install flixel-ui --quiet
-            haxelib install hxCodec --quiet
-            haxelib install hxcpp-debug-server --quiet || true
-          fi
+          # Psych/Nightmare/Kade usam Polymod e linc_luajit
+          haxelib git polymod https://github.com/MasterEric/polymod
+          haxelib git linc_luajit https://github.com/MAJigsaw77/linc_luajit
 
       - name: Setup Android
         run: |
@@ -51,5 +42,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Build
-          path: export/release/android/bin/**/*.apk
+          name: Build-APK
+          path: export/release/android/bin/app.apk
