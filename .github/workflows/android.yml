@@ -15,7 +15,7 @@ jobs:
         with:
           haxe-version: 4.2.5
 
-      - name: Install Haxelib Libs
+      - name: Install Haxelib Libraries
         run: |
           haxelib setup ~/haxelib
           haxelib install hxcpp --quiet
@@ -27,9 +27,8 @@ jobs:
           haxelib install hscript --quiet
           haxelib install hxCodec --quiet
 
-          # Mirrors estáveis para Psych / Kade / Nightmare
-          haxelib git polymod https://github.com/ShadowMario/polymod
-          haxelib git linc_luajit https://github.com/ShadowMario/linc_luajit
+          # AQUI ESTÁ A CORREÇÃO QUE FUNCIONA:
+          haxelib install polymod 1.7.0
 
       - name: Setup Android
         run: |
